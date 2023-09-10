@@ -1,0 +1,49 @@
+---
+title: "FML 1ST ASSIGNMENT"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+date: "2023-09-09"
+---
+## source:- kaggle(https://www.kaggle.com/code/sweetyvinayakmore/eda-flipkart-mobiles-dataset)
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+test <- read.csv("Flipkart_mobile_brands_scraped_data.csv")
+print(test)
+```
+
+```{r}
+summary(test$Selling.Price)
+
+```
+```{r}
+summary(test$Original.Price)
+```
+```{r}
+table(test$Brand)
+
+```
+```{r}
+table(test$Color)
+```
+```{r}
+x <- log(test$Selling.Price)
+print(x)
+```
+
+```{r}
+
+hist(test$Selling.Price, main = "Histogram of Quantitative Variable",
+xlab = "X Variable", ylab = "Y Variable")
+```
+```{r}
+plot(test$Selling.Price, test$Orginal.price, 
+     main = "Scatterplot of Selling.price vs. Orginal.price", 
+     xlab = "X Variable", ylab = "Y Variable", 
+     pch = 6, col = "blue")
+```
+
