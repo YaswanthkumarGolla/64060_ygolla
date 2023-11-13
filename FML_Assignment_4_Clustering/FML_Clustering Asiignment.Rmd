@@ -1,0 +1,138 @@
+---
+title: "FML_Asiignment_4_Clustering"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+date: "2023-11-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(ggplot2)
+library(factoextra)
+library(flexclust)
+library(cluster)
+library(tidyverse)
+library(gridExtra)
+```
+
+
+```{r}
+#Importing the Dataset
+
+pharma<-read.csv("Pharmaceuticals.csv")
+summary(pharma)
+```
+
+#1)Use only the numerical variables (1 to 9) to cluster the 21 firms. Justify the various choices made in conducting the cluster analysis, such as weights for different variables, the specific clustering algorithm(s) used, the number of clusters formed, and so on. 
+```{r}
+#Removing all the null values from the datasets and selecting the monetary variables
+colSums(is.na(pharma))
+row.names <- pharma[,2]
+Pharma_data<- pharma[, 3:11]
+head(Pharma_data)
+```
+
+```{r}
+# Scaling and Normalisation of dataset.
+class(Pharma_data)
+Pharma_scale<- scale(Pharma_data)
+# Calculate means of the scaled columns
+head(Pharma_scale)
+Pharma_scale <- as.data.frame(scale(Pharma_data))
+```
+
+```{r}
+# Calculate K-means clustering for various centers, use a variety of K values, and compare the results.
+kmeans_1normalization <- kmeans(Pharma_scale, centers = 3, nstart = 30)
+kmeans_2normalization<- kmeans(Pharma_scale, centers = 4, nstart = 30)
+kmeans_3normalization<- kmeans(Pharma_scale, centers = 7, nstart = 30)
+Plot_1results<-fviz_cluster(kmeans_1normalization, data = Pharma_scale)+ggtitle("k=3")
+Plot_2results<-fviz_cluster(kmeans_2normalization, data = Pharma_scale)+ggtitle("k=4")
+Plot_3results<-fviz_cluster(kmeans_3normalization, data = Pharma_scale)+ggtitle("k=7")
+grid.arrange(Plot_1results,Plot_2results,Plot_3results, nrow = 3)
+```
+
+```{r}
+distance<- dist(Pharma_scale, method = "euclidean")
+fviz_dist(distance)
+```
+
+```{r}
+# Estimating the  number of clusters
+# Elbow Method is used in scaling the data to determine the value of k
+fviz_nbclust(Pharma_scale, FUNcluster = kmeans, method = "wss") + labs(subtitle = "Elbow Method")
+```
+
+```{r}
+# Silhouette Method is used in scaling the data to determine the number of clusters
+fviz_nbclust(Pharma_scale,FUNcluster = kmeans,method = "silhouette")+labs(subtitle="Silhouette Method")
+```
+
+```{r}
+# Final analysis and Extracting results using 5 clusters and Visualize the results
+set.seed(200)
+final_Clusters<- kmeans(Pharma_scale, 5, nstart = 20)
+print(final_Clusters)
+```
+
+```{r}
+clusplot(Pharma_scale,final_Clusters$cluster, color = TRUE, labels = 2,lines = 0)
+```
+
+#b) Interpret the clusters with respect to the numerical variables used in forming the clusters
+```{r}
+PC_Cluster <- pharma[,c(12,13,14)]%>% mutate(clusters = final_Clusters$cluster)%>% arrange(clusters, .desc = TRUE)
+PC_Cluster
+```
+#Cluster 1 consists of 1,3,4,7,10,16,19, and 21 (highest leverage, highest rev growth, lowest market cap, lowest beta, and lowest PE ratio).
+
+#Cluster 2: 6, 8, 12 (lowest Net Profit Margin, greatest Beta and largest Rev Growth)
+
+#Cluster 3: 5, 9, 14, 20, (highest ROE, lowest ROA, lowest Net Profit Margin, lowest PE Ratio, strongest Rev Growth)
+
+#Cluster 4-2, 18 (highest PE ratio, lowest asset turnover, and lowest beta)
+
+#Cluster 5: 11, 13, 15, 17, (lowest beta/PE ratio and highest market cap, ROE, ROA, and asset turnover ratio)
+
+#Task3
+#In terms of the numerical, are there any clusters that exhibit a pattern. (10 to 12) variables? (those n not utilized in the cluster formation).
+
+```{r}
+plot1_normalization<-ggplot(PC_Cluster, mapping = aes(factor(clusters), fill=Median_Recommendation))+geom_bar(position = 'dodge')+labs(x ='No of clusters')
+plot2_normalization<- ggplot(PC_Cluster, mapping = aes(factor(clusters),fill = Location))+geom_bar(position = 'dodge')+labs(x ='No of clusters')
+plot3_normalization<- ggplot(PC_Cluster, mapping = aes(factor(clusters),fill = Exchange))+geom_bar(position = 'dodge')+labs(x ='No of clusters')
+grid.arrange(plot1_normalization, plot2_normalization, plot3_normalization)  
+
+```
+
+# According to the graph
+
+#Cluster 1: The Hold median is the highest in this cluster, which also includes unique Hold, Moderate Buy, Moderate Sell, and Strong Buy medians. They trade on the NYSE and are based in the US, the UK, and Switzerland.
+
+#Cluster 2: The number of firms on AMEX, NASDAQ, and NYSE is equal, but there is a distinct count difference between the US and Germany, along with a clear Hold and Moderate Buy median.
+
+#Cluster 3: traded on the New York Stock Exchange, features unique counts for France, Ireland, and the United States, and equally mild buy and sell order medians.
+
+#Cluster 4 is dispersed over the US, UK, and listed in; it has the same hold and moderate purchase medians.
+
+#Cluster 5: #exclusively listed on the NYSE, with median values of Hold and Moderate Buy, equally dispersed throughout the US and Canada.
+
+#The clusters exhibit a certain pattern with regard to the media recommendation variable: #Cluster 1 and Cluster 2 have hold recommendations.
+# The buy recommendations for Clusters 3, 4, and 5 are moderate.
+
+
+# (d) Give each cluster a suitable name using any or all of the dataset's variables.
+```{r}
+#Cluster 1 :-  HIGH HOLD CLUSTER
+#Cluster 2 :- HOLD CLUSTER
+#Cluster 3 :- BUY-SELL CLUSTER
+#Cluster 4 :- HOLD-BUY CLUSTER
+#Cluster 5 :- HOLD-BUY CLUSTER
+```
+
