@@ -1,0 +1,75 @@
+---
+title: "FML_Final exam"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+date: "2023-12-07"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#The dataset provided is comprised of a total of 12 variables, but for our specific research, we have focused on three key variables – sulfur content, ash content, and fuel cost. Upon conducting our analysis.
+#we considered both ward and complete linkages for our clustering method. After careful consideration of the results, we have ultimately chosen to use the ward.D linkage approach. This decision was based on evaluating the silhouette scores, which showed that the ward.D linkage yielded a higher evaluation score of .58, compared to the complete linkage method, which had a lower score of .41. Our decision to use the ward.D linkage was also supported by its ability to minimize the total within-cluster variance. This in turn allowed us to create more homogenous clusters with distinct differences between them, which is a key factor in producing ideal clusters.Upon careful examination of the dendograms, it was observed that ward linkage resulted in evenly sized clusters, while complete linkage produced disproportionately large clusters and numerous smaller ones. As such, it can be concluded that ward linkage is preferred due to its ability to generate homogeneous groups, supported by a higher silhouette score, making it the superior choice. In order to determine the optimum number of clusters to be formed, an elbow plot was utilized. After careful analysis, it was determined that the ideal number of clusters is 4. The elbow plot, depicting the within-groups sum of squares against the number of clusters, displayed a distinct elbow at 4 clusters (marked by a blue dotted line), indicating that increasing the number of clusters beyond 4 would not lead to a significant decrease in within-cluster variation. Additionally,We performed calculations to determine the silhoette scores for both ward and complete linkages at a K value of 4. The results were .58 and .41 respectively, indicating strong cluster cohesion and separation. Visually, the dendograms also displayed 4 distinct clusters, avoiding too many low-value clusters. The first cluster (n=34) had low sulfur and ash content, with fuel costs in the mid-range. The low sulfur content was due to a tight distribution, centered around -.4. Similarly, the ash content also had a low tight distribution, with values ranging from 0.5 to 1.0. The second cluster (n=8) had very high fuel costs, mid-range sulfur content, and low ash content.
+
+
+```{r}
+library(hclust1d)
+library(ggplot2)
+```
+
+```{r}
+#Importing the dataset
+fuel<- read.csv("fuel_receipts1.csv")
+summary(fuel)
+
+```
+```{r}
+# Displaying the first few rows of the data
+head(fuel)
+```
+
+
+```{r}
+# From the data taking only the required variables sulfur_content,ash_content and fuel_content
+fuel_1 <- fuel[,c(10:12)]
+fuel_2<-scale(fuel_1)
+```
+
+```{r}
+Hierarchical_clustering <- hclust(dist(fuel_2), method = "complete") #using the complete linkage method.
+
+```
+
+
+```{r}
+Hierarchical_clustering_1 <- hclust(dist(fuel_2), method = "ward.D") # using an other Ward.D linkage
+```
+
+```{r}
+dendrogram <- as.dendrogram(Hierarchical_clustering)
+plot(dendrogram)
+```
+
+```{r}
+dendrogram <- as.dendrogram(Hierarchical_clustering_1)
+plot(dendrogram)
+```
+
+```{r}
+clusters <- cutree(Hierarchical_clustering, h=2) #cuttree at the height of 2.
+clusters <- cutree(Hierarchical_clustering, h=5) #cuttree at the height of 5.
+```
+
+```{r}
+# Calculate total within sum of squares for different number of clusters
+within_sumof_squares <- vector() 
+for (i in 1:10) within_sumof_squares[i] <- sum(kmeans(fuel_2, centers=i)$within_sumof_squares)
+
+# Plot elbow curve  
+plot(1:10, within_sumof_squares, type="b", xlab="Number of Clusters", ylab="Within sum of squares")
+
+# Add blue dotted line at optimal k
+abline(v=4, lty=2, col="blue")
+```
